@@ -19,13 +19,34 @@ protected:
 
 	bool _LoadBox(IBox& _ParentBox, BinaryFileStream& _Stream);
 
-	bool _PraseFullBoxHead(IFullBox& _Box, BinaryFileStream& _Stream);
+	inline bool AddToBoxList(IBox& _ParentBox, IBox* _NewBox, uint64_t _BoxSize,BinaryFileStream& _Stream){
+		_NewBox->BoxSize = _BoxSize - 8;
+		_ParentBox.Boxs.push_back(_NewBox);
+		return true;
+	}
+
+	inline bool AddToBoxList(IBox& _ParentBox, IFullBox* _NewBox, uint64_t _BoxSize, BinaryFileStream& _Stream) {
+		_NewBox->BoxSize = _BoxSize - 12;
+		char temp_buff[4];
+		memset(temp_buff, 0, 4);
+		_Stream.Read(&temp_buff[3], 1);
+		memcpy(&_NewBox->Version, temp_buff, 4);
+		_Stream.Read(&temp_buff[1], 3);
+		std::reverse(&temp_buff[0], &temp_buff[4]);
+		memcpy(&_NewBox->Flag, temp_buff, 4);
+		_ParentBox.Boxs.push_back(_NewBox);
+		return true;
+	}
+
+	//bool _PraseFullBoxHead(IFullBox& _Box, BinaryFileStream& _Stream);
 
 	bool _PraseFTYPBox(FTYPBox& _Box, BinaryFileStream& _Stream);
 
 	bool _PraseMVHDBox(MVHDBox& _Box, BinaryFileStream& _Stream);
 
-	bool _PraseTRAKBox(MVHDBox& _Box, BinaryFileStream& _Stream);
+	bool _PraseTKHDBox(TKHDBox& _Box, BinaryFileStream& _Stream);
+
+	bool _PraseELSTBox(ELSTBox& _Box, BinaryFileStream& _Stream);
 protected:
 	std::string m_sVideoFileName;
 	MP4RawData m_dVideoData;
